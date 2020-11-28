@@ -61,10 +61,10 @@ int e131_socket(void) {
 }
 
 /* Bind a socket file descriptor to a port number for E1.31 communication */
-int e131_bind(int sockfd, const uint16_t port) {
+int e131_bind(int sockfd, const uint16_t port, const char* ownIP) {
   e131_addr_t addr;
   addr.sin_family = AF_INET;
-  addr.sin_addr.s_addr = INADDR_ANY;
+  addr.sin_addr.s_addr = inet_addr(ownIP);
   addr.sin_port = htons(port);
   memset(addr.sin_zero, 0, sizeof addr.sin_zero);
   return bind(sockfd, (struct sockaddr *)&addr, sizeof addr);

@@ -121,7 +121,7 @@ typedef enum {
 extern int e131_socket(void);
 
 /* Bind a socket file descriptor to a port number for E1.31 communication */
-extern int e131_bind(int sockfd, const uint16_t port);
+extern int e131_bind(int sockfd, const uint16_t port, const char* ownIP);
 
 /* Initialize a unicast E1.31 destination using a host and port number */
 extern int e131_unicast_dest(e131_addr_t *dest, const char *host, const uint16_t port);
