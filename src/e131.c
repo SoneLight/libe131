@@ -53,11 +53,21 @@ const uint16_t _E131_DMP_ADDR_INC = 0x0001;
 
 /* Create a socket file descriptor suitable for E1.31 communication */
 int e131_socket(void) {
-#ifdef _WIN32
-  WSADATA WsaData;
-  WSAStartup(MAKEWORD(2, 2), &WsaData);
-#endif
-  return socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  #ifdef _WIN32
+    WSADATA WsaData;
+    WSAStartup(MAKEWORD(2, 2), &WsaData);
+  #endif
+  int sockfd = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  int reuse = 1;
+  if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) < 0)
+    perror("setsockopt(SO_REUSEADDR) failed");
+
+  #ifdef SO_REUSEPORT
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, (const char*)&reuse, sizeof(reuse)) < 0) 
+      perror("setsockopt(SO_REUSEPORT) failed");
+  #endif
+  
+  return sockfd;
 }
 
 /* Bind a socket file descriptor to a port number for E1.31 communication */
@@ -207,7 +217,24 @@ ssize_t e131_recv(int sockfd, e131_packet_t *packet) {
     errno = EINVAL;
     return -1;
   }
-  return recv(sockfd, packet->raw, sizeof packet->raw, 0);
+  return recv(sockfd, packet->raw, sizeof packet->raw, MSG_DONTWAIT);
+}
+
+int e131_packetAvailable(int sockfd)
+{
+  fd_set rfds;
+  struct timeval tv;
+  int retval;
+
+  /* Watch to see when it has input. */
+
+  FD_ZERO(&rfds);
+  FD_SET(sockfd, &rfds);
+
+  tv.tv_sec = 0;
+  tv.tv_usec = 0;
+
+  return select(sockfd+1, &rfds, NULL, NULL, &tv);
 }
 
 /* Validate that an E1.31 packet is well-formed */
