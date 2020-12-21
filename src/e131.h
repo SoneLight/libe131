@@ -152,6 +152,8 @@ extern ssize_t e131_recv(int sockfd, e131_packet_t *packet);
 
 int e131_packetAvailable(int sockfd);
 
+void e131_close(int sockfd);
+
 /* Validate that an E1.31 packet is well-formed */
 extern e131_error_t e131_pkt_validate(const e131_packet_t *packet);
 

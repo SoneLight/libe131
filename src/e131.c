@@ -217,7 +217,7 @@ ssize_t e131_recv(int sockfd, e131_packet_t *packet) {
     errno = EINVAL;
     return -1;
   }
-  return recv(sockfd, packet->raw, sizeof packet->raw, MSG_DONTWAIT);
+  return recv(sockfd, packet->raw, sizeof packet->raw, 0);
 }
 
 int e131_packetAvailable(int sockfd)
@@ -235,6 +235,15 @@ int e131_packetAvailable(int sockfd)
   tv.tv_usec = 0;
 
   return select(sockfd+1, &rfds, NULL, NULL, &tv);
+}
+
+void e131_close(int sockfd)
+{
+  #ifndef _WIN32
+  close(sockfd);
+  #else
+  closesocket(sockfd);
+  #endif
 }
 
 /* Validate that an E1.31 packet is well-formed */
